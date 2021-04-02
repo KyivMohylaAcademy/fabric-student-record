@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet" type="text/css" href="stylesheets/styles.css">
+</head>
+<body>
+
+<div class="flex-container">
+    <form class="register-form">
+        <input type="text" id="login" name="login" placeholder="Login"><br>
+        <input type="text" id="pass" name="password" placeholder="Password"><br><br>
+        <input type="radio" name="entity" id="student" value="student">
+        <label for="student">Student</label>
+        <input type="radio" name="entity" id="teacher" value="teacher" checked>
+        <label for="teacher">Teacher</label><br><br>
+        <button class="round-btn" type="submit" id="register-btn">Register</button>
+    </form>
+    <p id="cert"></p>
+</div>
+<script type="text/javascript">
+const form = document.querySelector('.register-form');
+const cert = document.querySelector('#cert');
+cert.style.visibility = 'hidden'
+form.addEventListener('submit', async(e) => {
+    e.preventDefault();
+
+    const login = form.login.value;
+    const password = form.password.value;
+    const entity = form.entity.value;
+    
+    const emptyOrWhitespaceRegex = new RegExp("^$|\\s+");
+
+    if(emptyOrWhitespaceRegex.test(login) || emptyOrWhitespaceRegex.test(password)){
+        alert('Login and Password fields must be filled!')
+    } else {
+        try{
+            const response = await fetch('/api/v1/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({login, password, entity})
+            });
+
+            const responseObj = await response.json();
+                if (responseObj.message){
+                    alert(responseObj.message);
+                    console.log(responseObj.error);
+                } else {
+                    cert.style.visibility = 'visible'
+                    cert.innerHTML = responseObj.certificate
+                    alert('Success!');
+                }
+        } catch(e){
+            console.log(e);
+        }
+    }
+})
+</script>
+</body>
+</html>
