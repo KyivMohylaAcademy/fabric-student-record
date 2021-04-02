@@ -1,0 +1,59 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+</head>
+<body>
+<header>
+    <h1>
+        Teacher registration
+    </h1>
+</header>
+
+<form method="POST" id="teacher-form" action="/api/v1/teacher">
+    <div>
+        <label for="login" class="col-form-label"><strong>Login</strong></label>
+        <input type="text" name="login" required class="input-group-text"/>
+    </div>
+    <div>
+        <label for="password" class="col-form-label"><strong>Password</strong></label>
+        <input type="text" name="password" required class="input-group-text"/>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-sm btn-primary">
+            Register
+        </button>
+    </div>
+</form>
+
+<script>
+
+    let form = document.forms["teacher-form"];
+
+    form.addEventListener('submit', async(event) => {
+        event.preventDefault();
+
+        const login = form.login.value;
+        const password = form.password.value;
+
+        const req = await fetch('/api/v1/teacher', {
+            method: 'POST',
+            body: JSON.stringify({
+                login,
+                password
+            }),
+            headers:{
+                'Content-Type':'application/json'
+            }
+        });
+
+        console.log(req)
+
+        const data = await req.json();
+
+        if(data.certificate){
+            location.assign('/v1/')
+        }
+    })
+</script>
