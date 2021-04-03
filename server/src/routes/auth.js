@@ -22,6 +22,7 @@ const teacherRegistration = async (req, res) => {
     return;
   }
 
+
   const identity = {
     label: 'client',
     certificate: adminData.certificate,
