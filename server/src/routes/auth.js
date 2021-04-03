@@ -5,10 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 
-/*
+
 const studentRegistration = async (req, res) => {
   return registerUser('student')(req, res);
-};*/
+};
 
 const teacherRegistration = async (req, res) => {
   return registerUser('teacher')(req, res);
@@ -80,5 +80,6 @@ const registerUser = (type) => async (req, res) => {
 };
 
 router.post('/teacher', teacherRegistration);
+router.post('/student', studentRegistration);
 
 export default router;
