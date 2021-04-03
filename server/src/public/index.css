@@ -1,0 +1,7 @@
+body{
+    background-image: url("../assets/kma.jpeg");
+    background-size: cover;
+}
+.form-container{
+    margin: auto;
+}
