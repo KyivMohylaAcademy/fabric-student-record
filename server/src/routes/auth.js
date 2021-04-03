@@ -72,7 +72,7 @@ const teacherRegistration = async (req, res) => {
 
 
   try {
-   const userData = await ca.enroll({enrollmentID: login, enrollmentSecret: password});
+    const userData = await ca.enroll({enrollmentID: login, enrollmentSecret: password});
   } catch (enrollmentErr) {
     res.status(400).json({ message: 'Error while enrolling admin', error: err.message });
   }
@@ -85,6 +85,7 @@ const teacherRegistration = async (req, res) => {
   });
 
 };
+
 
 router.post('/teacher', teacherRegistration);
 
