@@ -43,7 +43,7 @@ channels:
 
     # Required. list of peers from participating orgs
     peers:
-      peer1:
+      peer0.org1.example.com:
         # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
         # have the chaincode installed. The app can also use this property to decide which peers
         # to send the chaincode install request. Default: true
@@ -67,11 +67,11 @@ channels:
 # list of participating organizations in this network
 #
 organizations:
-  NAUKMA:
-    mspid: NAUKMA
+  Org1:
+    mspid: Org1
 
     peers:
-      - peer1
+      - peer0.org1.example.com
 
 #
 # List of orderers to send transaction and channel create/update requests to. For the time
@@ -80,24 +80,25 @@ organizations:
 #
 orderers:
   orderer_n1:
-    url: grpc://172.28.0.5:7050
+    url: grpc://0.0.0.0:7050
 
     # these are standard properties defined by the gRPC library
     # they will be passed in as-is to gRPC client constructor
     grpcOptions:
       ssl-target-name-override: orderer_n1
+    tlsCACerts:
 
 #
 # List of peers to send various requests to, including endorsement, query
 # and event listener registration.
 #
 peers:
-  peer1:
+  peer0.org1.example.com:
     # this URL is used to send endorsement and query requests
-    url: grpc://172.28.0.4:7051
+    url: grpc://0.0.0.0:7051
 
     grpcOptions:
-      ssl-target-name-override: peer1
+      ssl-target-name-override: peer0.org1.example.com
       request-timeout: 120001
 
 # Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
@@ -106,7 +107,7 @@ peers:
 #
 certificateAuthorities:
   ca-org1:
-    url: http://172.28.0.3:7054
+    url: http://0.0.0.0:7054
     # the properties specified under this object are passed to the 'http' client verbatim when
     # making the request to the Fabric-CA server
     httpOptions:
