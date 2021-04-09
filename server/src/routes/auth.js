@@ -59,7 +59,7 @@ const registrationHandler = async (res, login, password, affiliation) => {
     res.status(400).send({ error: 'Немає зєднання' })
     return
   }
-  
+
   const admin = await gateway.getCurrentIdentity();
 
   const secret = await ca.register({
