@@ -26,6 +26,7 @@ class StudentRecordsStorage extends Contract {
     return JSON.stringify(recordExample, null, 2);
   }
 
+
   async addSubjectToStudentRecord(ctx, studentEmail, semesterNumber, subjectName) {
     const identity = new ClientIdentity(ctx.stub);
     if(identity.cert.subject.organizationalUnitName !== 'admin'){
