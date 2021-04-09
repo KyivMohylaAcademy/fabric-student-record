@@ -1,5 +1,6 @@
 import express from 'express'
-import { auth } from "./routes";
+// import './models';
+import { auth } from './routes';
 
 const app = express();
 app.use(express.urlencoded());
