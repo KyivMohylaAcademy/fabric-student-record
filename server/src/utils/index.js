@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
 
 export const getCA = () =>{
   try {
-    return new FabricCAService(`http://192.168.88.88:7054`)
+    return new FabricCAService(`http://192.168.88.85:7054`)
   }catch (e){
     console.error(e)
     throw new Error(e.message)
@@ -22,7 +22,7 @@ export const getConnectedWallet = async (label, mixin) => {
   const connectionOptions = {
     identity: label,
     wallet,
-    discovery: { enabled: true, asLocalhost: true },
+    discovery: { enabled: false, asLocalhost: true },
   };
   await gateway.connect(connectionProfile, connectionOptions);
   return gateway;
@@ -32,7 +32,7 @@ export const registerUser = async (ca, adminWallet, userData) => {
     await ca.register({
       enrollmentID: userData.login,
       enrollmentSecret: userData.password,
-      role: 'peer',
+      role: 'client',
       affiliation: `org1.${userData.affiliation}`,
       maxEnrollments: -1,
     }, adminWallet);
@@ -45,13 +45,12 @@ export const registerUser = async (ca, adminWallet, userData) => {
 
 export const sendTransaction = async(gateway, transaction) => {
   try {
-    // console.log(await gateway.getChannel())
-
     const network = await gateway.getNetwork('testchannel');
     const contract = await network.getContract('recordcontract',
       'org.fabric.studentRecordsStorage');
     const issueResponse = await contract.submitTransaction(transaction.name, ...transaction.props);
     return JSON.parse(issueResponse.toString());
+    // return true;
   }
   catch (error) {
     console.log(`Error processing transaction. ${error.stack}`);

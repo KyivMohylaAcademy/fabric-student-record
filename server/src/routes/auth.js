@@ -13,9 +13,9 @@ const studentRegistration = async (req, res) => {
       adminData.certificate,
       adminData.key.toBytes()
     );
-    const gateway = await getConnectedWallet('client', mixin);
+    const gateway = await getConnectedWallet('Org1MSP', mixin);
     const admin = await gateway.getCurrentIdentity()
-    await registerUser(ca, admin, { login, password, affiliation: 'student' });
+    await registerUser(ca, admin, { login, password, affiliation: 'teacher' });
 
     const userData = await ca.enroll({
       enrollmentID: login,
