@@ -22,15 +22,15 @@ peer channel create -o orderer.example.com:7050 -c $CHANNEL_NAME -f ./channel-ar
 peer channel join -b testchannel.block
 
 #Install chaincode
-#peer chaincode install -n recordcontract -v 1.0 -l node -p /opt/gopath/src/github.com/chaincode
+#peer chaincode install -n studentrecordsstorage -v 1.0 -l node -p /opt/gopath/src/github.com/chaincode
 #
 ##Initiate chaincode
-#peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract -l node -v 1.0 -c '{"Args":[]}'
+#peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n studentrecordsstorage -l node -v 1.0 -c '{"Args":[]}'
 #
-#peer chaincode invoke -o orderer.example.com:7050 --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt -c '{"Args":["createStudentRecord"]}'
-#peer chaincode query -C $CHANNEL_NAME -n recordcontract -c '{"Args":["createStudentRecord"]}'
+#peer chaincode invoke -o orderer.example.com:7050 --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n studentrecordsstorage --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt -c '{"Args":["createStudentRecord"]}'
+#peer chaincode query -C $CHANNEL_NAME -n studentrecordsstorage -c '{"Args":["createStudentRecord"]}'
 ##Update chaincode - Change version
-#peer chaincode install -n recordcontract -v 1.1 -l node -p /opt/gopath/src/github.com/chaincode
+#peer chaincode install -n studentrecordsstorage -v 1.1 -l node -p /opt/gopath/src/github.com/chaincode
 #
-#peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract -l node -v 1.1 -c '{"Args":[]}'
+#peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n studentrecordsstorage -l node -v 1.1 -c '{"Args":[]}'
 
