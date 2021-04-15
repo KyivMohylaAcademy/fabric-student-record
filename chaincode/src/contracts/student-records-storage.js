@@ -8,38 +8,91 @@ class StudentRecordsStorage extends Contract {
     super('org.fabric.studentRecordsStorage');
   }
 
+  async getStudentRecord(ctx, studentEmail) {
+    const identity = new ClientIdentity(ctx.stub);
+    if (identity.cert.subject.organizationalUnitName !== 'admin') {
+      throw new Error("Current user does not have access to this function!");
+    }
+
+    const recordAsBytes = await ctx.stub.getState(studentEmail);
+    if (!recordAsBytes || recordAsBytes.toString().length === 0) {
+      throw new Error("Student with this email does not exist!");
+    }
+    return JSON.parse(recordAsBytes.toString());
+  }
+
+  async updateStudentRecord(ctx, studentEmail, record) {
+    const newRecordInBytes = Buffer.from(JSON.stringify(record));
+    await ctx.stub.putState(studentEmail, newRecordInBytes);
+  }
+
   async createStudentRecord(ctx, studentEmail, fullName) {
     const identity = new ClientIdentity(ctx.stub);
-    if (identity.cert.subject.organizationalUnitName !== 'teacher') {
-      throw new Error('Current subject is not have access to this function');
+    if (identity.cert.subject.organizationalUnitName !== 'admin') {
+      throw new Error("Current user does not have access to this function.");
     }
+
     const recordAsBytes = await ctx.stub.getState(studentEmail);
-    // if(!recordAsBytes || recordAsBytes.toString().length !== 0){
-    //   throw new Error('Student with the current email already exist');
-    // }
-    const recordExample = {
+    if (recordAsBytes && recordAsBytes.toString().length !== 0) {
+      throw new Error("Student with this email already exists!");
+    }
+
+    const record = {
       fullName: fullName,
       semesters: []
     }
-    const newRecordInBytes = Buffer.from(JSON.stringify(recordExample));
+
+    const newRecordInBytes = Buffer.from(JSON.stringify(record));
     await ctx.stub.putState(studentEmail, newRecordInBytes);
-    return JSON.stringify(recordExample, null, 2);
+    return JSON.stringify(record, null, 2);
   }
 
+
   async addSubjectToStudentRecord(ctx, studentEmail, semesterNumber, subjectName) {
-    const identity = new ClientIdentity(ctx.stub);
-    if (identity.cert.subject.organizationalUnitName !== 'teacher') {
-      throw new Error('Current subject is not have access to this function');
+    const record = await getStudentRecord(ctx, studentEmail);
+    const teacherEmail = identity.cert.subject.commonName;
+
+    if (!record.semesters[semesterNumber]) {
+      record.semesters[semesterNumber] = {};
     }
-    const recordAsBytes = await ctx.stub.getState(studentEmail);
-    const recordAsObject = JSON.parse(recordAsBytes.toString());
-    recordAsObject.semesters[semesterNumber][subjectName] = {
-      lector: identity.cert.subject.commonName,
+
+    record.semesters[semesterNumber][subjectName] = {
+      lector: teacherEmail,
       themes: []
     }
-    const newRecordInBytes = Buffer.from(JSON.stringify(recordAsObject));
-    await ctx.stub.putState(studentEmail, newRecordInBytes);
-    return JSON.stringify(recordAsObject, null, 2);
+
+    await updateStudentRecord(ctx, studentEmail, record);
+    return JSON.stringify(record, null, 2);
+  }
+
+  async addGradeToStudentRecord(ctx, studentEmail, semester, subjectName, theme, grade) {
+    const record = await getStudentRecord(ctx, studentEmail);
+    if (!record.semesters[semester]?.[subjectName]) {
+      throw new Error("This subject doesn't exist!");
+    }
+
+    record.semesters[semester][subjectName].themes.push([
+      {
+        title: theme,
+        rating: grade,
+        date: Date.now()
+      }
+    ]);
+
+    await updateStudentRecord(ctx, studentEmail, record);
+    return JSON.stringify(record, null, 2);
+  }
+
+  async getAllStudentGrages(ctx, studentEmail) {
+    const record = await getStudentRecord(ctx, studentEmail);
+
+    return JSON.stringify(record.semesters, null, 2);
+  }
+
+  async getStudentGragesBySemester(ctx, studentEmail, semester) {
+    const record = await getStudentRecord(ctx, studentEmail);
+
+    return JSON.stringify(record.semesters[semester] || [], null, 2);
   }
 }
 
