@@ -6,12 +6,14 @@ import yaml from 'js-yaml';
 
 export const getCA = () =>{
   try {
-    return new FabricCAService(`http://192.168.88.85:7054`)
+    return new FabricCAService(`http://0.0.0.0:7054`)
   }catch (e){
     console.error(e)
     throw new Error(e.message)
   }
 }
+
+
 export const getConnectedWallet = async (label, mixin) => {
   const wallet = new InMemoryWallet();
   await wallet.import(label, mixin);
@@ -27,6 +29,8 @@ export const getConnectedWallet = async (label, mixin) => {
   await gateway.connect(connectionProfile, connectionOptions);
   return gateway;
 }
+
+
 export const registerUser = async (ca, adminWallet, userData) => {
   try {
     await ca.register({
@@ -43,13 +47,14 @@ export const registerUser = async (ca, adminWallet, userData) => {
   }
 }
 
+
 export const sendTransaction = async(gateway, transaction) => {
   try {
     const network = await gateway.getNetwork('testchannel');
     const contract = await network.getContract('recordcontract',
       'org.fabric.studentRecordsStorage');
     const issueResponse = await contract.submitTransaction(transaction.name, ...transaction.props);
-    return JSON.parse(issueResponse.toString());
+    return issueResponse.toString() ? JSON.parse(issueResponse.toString()) : null;
     // return true;
   }
   catch (error) {
