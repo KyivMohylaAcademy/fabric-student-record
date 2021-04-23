@@ -1,91 +1,102 @@
-import express from 'express';
-import FabricCAServices from 'fabric-ca-client';
-import fs from 'fs';
 import path from 'path';
+import * as fs from 'fs';
+
 import yaml from 'js-yaml';
+import express from 'express';
+import FabricCAService from 'fabric-ca-client';
+import {
+    Gateway,
+    InMemoryWallet,
+    X509WalletMixin
+} from 'fabric-network';
+
+const FABRIC_CA_URL = `http://0.0.0.0:7054`;
+const ADMIN_LOGIN = 'admin'
+const ADMIN_PASSWORD = 'password'
 
 const router = express.Router();
-const teacherRegistration = async (req, res) => {
-  const {login, password} = req.body;
 
-  const ca = new FabricCAServices('http://0.0.0.0:7054');
+const ca = new FabricCAService(FABRIC_CA_URL);
 
-  let adminData;
-  try {
-    adminData = await ca.enroll({
-      enrollmentID: process.env.ADMIN_ENROLLMENT_ID,
-      enrollmentSecret: process.env.ADMIN_ENROLLMENT_SECRET
+const createAdminGateway = async() => {
+    const adminData = await ca.enroll({ enrollmentID: ADMIN_LOGIN, enrollmentSecret: ADMIN_PASSWORD });
+    const admin_id = {
+        label: 'client',
+        certificate: adminData.certificate,
+        privateKey: adminData.key.toBytes(),
+        mspId: 'NAUKMA',
+    };
+    const wallet = new InMemoryWallet();
+    const mixin = X509WalletMixin.createIdentity(admin_id.mspId, admin_id.certificate, admin_id.privateKey);
+    await wallet.import(admin_id.label, mixin);
+    const gateway = new Gateway();
+    const connectionProfile = yaml.safeLoad(
+        fs.readFileSync(path.resolve(__dirname, '../gateway/networkConnection.yaml'), 'utf8'),
+    );
+    await gateway.connect(connectionProfile, {
+        identity: admin_id.label,
+        wallet,
+        discovery: { enabled: false, asLocalhost: true },
     });
-  } catch(enrollmentErr) {
-    console.error('Failed to enroll admin: ' + enrollmentErr);
-    res.status(500).send('Failed to enroll admin: ' + enrollmentErr);
-    return;
-  }
 
-  const identity = {
-    label: 'client',
-    certificate: adminData.certificate,
-    privateKey: adminData.key.toBytes(),
-    mspId: 'NAUKMA'
-  };
+    return gateway;
+}
 
-  const wallet = new InMemoryWallet();
-  const mixin = X509WalletMixin.createIdentity(identity.mspId, identity.certificate, identity.privateKey);
+const registrationHandler = async(res, login, password, affiliation) => {
+    if (!login || !password) {
+        res.status(400).send({ error: 'Must provide login and password' })
+        return
+    }
 
-  try{
-    await wallet.import(identity.label, mixin);
-  }
-  catch(err){
-    res.status(400).json({ message: 'Error while importing wallet', error: err.message });
-  }
+    let gateway;
+    try {
+        gateway = await createAdminGateway();
+    } catch (e) {
+        res.status(400).send({ error: 'Could not connect to gateway' })
+        return
+    }
+    const admin = await gateway.getCurrentIdentity();
 
-  const gateway = new Gateway();
-  const connectionProfile = yaml.safeLoad(
-      fs.readFileSync(__dirname + '/../gateway/networkConnection.yaml', 'utf8')
-  );
-  const connectionOptions = {
-    identity: identity.label,
-    wallet: wallet,
-    discovery: {enable: false, asLocalhost: true}
-  };
-
-  try {
-    await gateway.connect(connectionProfile, connectionOptions);
-  } catch(connErr) {
-    res.status(400).json({ message: 'Error while connecting to gateway', error: err.message });
-  }
-
-  const admin = gateway.getCurrentIdentity();
-
-  try {
-    await ca.register({
-      enrollmentID: login,
-      enrollmentSecret: password,
-      role: 'peer',
-      affiliation: 'naukma.teacher',
-      maxEnrollments: -1
+    const secret = await ca.register({
+        enrollmentID: login,
+        enrollmentSecret: password,
+        role: 'peer',
+        affiliation: affiliation,
+        maxEnrollments: -1,
     }, admin);
-  } catch (registerErr) {
-    res.status(400).json({ message: 'Error when attempt to register', error: err.message });
-    return;
-  }
 
+    let userData;
+    try {
+        userData = await ca.enroll({
+            enrollmentID: login,
+            enrollmentSecret: secret,
+        });
+    } catch (e) {
+        res.status(400).send({ error: 'Invalid credentials, possibly the login is already taken' })
+        gateway.disconnect();
+        return
+    }
 
-  try {
-   const userData = await ca.enroll({enrollmentID: login, enrollmentSecret: password});
-  } catch (enrollmentErr) {
-    res.status(400).json({ message: 'Error while enrolling admin', error: err.message });
-  }
-  gateway.disconnect();
-
-  res.status(201).json({
-    login: login,
-    certificate: userData.certificate,
-    privateKey: userData.key.toBytes(),
-  });
-
+    gateway.disconnect();
+    res.status(201).json({
+        login,
+        certificate: userData.certificate,
+        privateKey: userData.key.toBytes(),
+    });
 };
 
-router.post('/teacher', teacherRegistration);
+router.post('/student', (req, res) => registrationHandler(
+    res,
+    req.body.login,
+    req.body.password,
+    'naukma.student'
+));
+
+router.post('/teacher', (req, res) => registrationHandler(
+    res,
+    req.body.login,
+    req.body.password,
+    'naukma.teacher'
+));
 
 export default router;
