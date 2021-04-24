@@ -1,2 +1,8 @@
 .idea
 node_modules
+bin
+ca
+config/*.yaml
+network/channel-artifacts
+network/crypto-config
+deploy.sh

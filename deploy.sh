@@ -29,8 +29,14 @@ peer channel join -b testchannel.block
 #
 #peer chaincode invoke -o orderer.example.com:7050 --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt -c '{"Args":["createStudentRecord"]}'
 #peer chaincode query -C $CHANNEL_NAME -n recordcontract -c '{"Args":["createStudentRecord"]}'
-##Update chaincode - Change version
-#peer chaincode install -n recordcontract -v 1.1 -l node -p /opt/gopath/src/github.com/chaincode
-#
-#peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract -l node -v 1.1 -c '{"Args":[]}'
+#peer chaincode query -C $CHANNEL_NAME -n recordcontract -c '{"Args":["getStudentData", "student1@ukma.edu.ua"]}'
+#peer chaincode query -C $CHANNEL_NAME -n recordcontract -c '{"Args":["createStudentRecord"]}'
+#peer chaincode query -C $CHANNEL_NAME -n recordcontract -c '{"Args":["addSubjectToStudentRecord"]}'
 
+##Update chaincode - Change version
+#peer chaincode install -n recordcontract -v 2.3 -l node -p /opt/gopath/src/github.com/chaincode
+#
+#peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n recordcontract -l node -v 2.1 -c '{"Args":[]}'
+
+# 2.5 - my working version
+# 2.7 - Dasha's working version
